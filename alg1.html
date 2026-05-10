@@ -1,0 +1,204 @@
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Consolas, monospace;
+        }
+    </style>
+</head>
+<body>
+<div>Количество <input value="5" class="taskCountText"></div>
+<div class="questionText"></div>
+<button class="checkBtn">Проверить</button>
+</div>
+</body>
+<script>
+
+
+    class Randomizer {
+        shuffle(ar) {
+            let index = randomizer.getNumber(0, ar.length - 1)
+            let temp = 0
+            for (let i = 0; i < ar.length; i++) {
+                temp = ar[index]
+                ar[index] = ar[i]
+                ar[i] = temp
+                index = randomizer.getNumber(0, ar.length - 1)
+            }
+        }
+
+        getWord(from, to) {
+            let varLen = this.getNumber(from, to)
+            let varName = new Array(varLen)
+            for (let i = 0; i < varLen; i += 2) {
+                varName[i] = this.getConsonant()
+            }
+            for (let i = 1; i < varLen; i += 2) {
+                varName[i] = this.getVowel()
+            }
+            return varName.join("")
+        }
+
+        getChoice(list) {
+            return list[Math.floor(Math.random() * list.length)]
+        }
+
+        getLetter() {
+            let letters = ["a", "b", "c", "d", "e", "w", "z", "x", "y", "n", "m", "k"]
+            return letters[Math.floor(Math.random() * letters.length)]
+        }
+
+        getVowel() {
+            let letters = ["a", "e", "i", "o", "u"]
+            return letters[Math.floor(Math.random() * letters.length)]
+        }
+
+        getConsonant() {
+            let letters = ["b", "c", "d", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "z"]
+            return letters[Math.floor(Math.random() * letters.length)]
+        }
+
+        getNumber(from, to) {
+            return Math.trunc((Math.random() * (to - from + 1)) + from)
+        }
+
+        getFloat(from, to) {
+            let w = this.getNumber(from, to)
+            let e = this.getNumber(10, 99)
+            return `${w}.${e}`
+        }
+
+        getBool() {
+            return Math.random() > 0.5
+        }
+
+        getLogicalSign() {
+            let sign = this.getChoice([">", ">", ">=", "<", "<", "<=", "!=", "=="])
+            let word = ""
+            switch (sign) {
+                case "<":
+                    word = "меньше"
+                    break
+                case ">":
+                    word = "больше"
+                    break
+                case "<=":
+                    word = "меньше или равно"
+                    break
+                case ">=":
+                    word = "больше или равно"
+                    break
+                case "==":
+                    word = "равно"
+                    break
+                case "!=":
+                    word = "не равно"
+                    break
+            }
+            return [sign, word]
+        }
+
+        getMathSign() {
+            return this.getChoice(["+", "-", "+", "-", "+", "-"])
+        }
+
+        getFuncFromSign(sign) {
+            switch (sign) {
+                case "+":
+                    return "plus"
+                case "-":
+                    return "minus"
+                case "*":
+                    return "mul"
+            }
+            return "error"
+        }
+    }
+
+    class Checker {
+        clearAnswer(answerString) {
+            this.answer = answerString.split("\n")
+        }
+
+        isRight(rightAnswer) {
+            for (let i = 0; i < this.answer.length; i++) {
+                if (rightAnswer[i] != this.answer[i]) {
+                    return false
+                }
+            }
+            return true
+        }
+    }
+
+    class Task {
+
+        constructor() {
+            this.varNames = ["a", "b", "c", "d", "e", "w", "z", "x", "y", "n", "m", "k"]
+            randomizer.shuffle(this.varNames)
+            this.names = []
+            this.values = []
+        }
+
+        reset() {
+
+            this.names = [this.varNames[0]]
+            this.values.push(randomizer.getNumber(2, 5))
+            this.makeQuestion()
+            this.makeAnswer()
+        }
+
+        makeQuestion() {
+            this.question = `${this.names[0]} = ${this.values[0]}`
+            console.log(this.question)
+        }
+
+        makeAnswer() {
+            this.answer = []
+        }
+
+        printAnswer() {
+            return this.answer.join("\n")
+        }
+    }
+
+    let taskCount = document.querySelector(".taskCountText")
+    let questionText = document.querySelector('.questionText')
+    let answerCont = document.querySelector('.answerCont')
+    let answerCountText = document.querySelector('.answerCountText')
+    let answerInputText = document.querySelector('.answerInputText')
+    let checkBtn = document.querySelector('.checkBtn')
+
+    let randomizer = new Randomizer()
+    let checker = new Checker()
+    let task = new Task()
+
+    let count = 0
+
+    function screenUiUpdate() {
+        console.log("COUNT - ", count)
+        questionText.text = task.question
+    }
+
+    function btnUiUpdate() {
+
+    }
+
+    window.addEventListener('load', () => {
+        task.reset()
+        screenUiUpdate()
+    })
+
+    checkBtn.addEventListener('click', () => {
+        answerChecker.clearAnswer(answerInputText.value)
+        if (answerChecker.isRight(task.answer)) {
+            count++
+            answerCont.style.borderColor = "green"
+        } else {
+            count = 0
+            answerCont.style.borderColor = "red"
+        }
+        btnUiUpdate()
+        task.reset()
+        screenUiUpdate()
+    })
+</script>
