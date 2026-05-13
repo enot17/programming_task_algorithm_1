@@ -6,28 +6,56 @@
         }
     </style>
 </head>
+
 <body>
-<div>Количество <input value="5" class="taskCountText"></div>
-<div class="questionText"></div>
-<button class="checkBtn">Проверить</button>
-</div>
+    <div>Количество <input value="5" class="taskCountText"></div>
+    <div class="questionText"></div>
+    <button class="checkBtn">Проверить</button>
+    </div>
 </body>
 <script>
 
 
+
+    let genPartType = {
+        left:-1,
+        both:0,
+        right:1
+    }
+
+
+    let varNames = {
+        index: 0,
+        names: ["a", "b", "c", "d", "e", "w", "z", "x", "y", "n", "m", "k"],
+        get(){
+            this.index++
+            return this.names[this.index-1]
+        }
+    }
+
+    let usedVarNames = {
+        names:[],
+        get(){
+            return randomizer.choose(this.names)
+        },
+        add(){
+            this.names.push(varNames.get())
+        }
+    }
+
     class Randomizer {
         shuffle(ar) {
-            let index = randomizer.getNumber(0, ar.length - 1)
+            let index = this.number(0, ar.length - 1)
             let temp = 0
             for (let i = 0; i < ar.length; i++) {
                 temp = ar[index]
                 ar[index] = ar[i]
                 ar[i] = temp
-                index = randomizer.getNumber(0, ar.length - 1)
+                index = this.number(0, ar.length - 1)
             }
         }
 
-        getWord(from, to) {
+        word(from, to) {
             let varLen = this.getNumber(from, to)
             let varName = new Array(varLen)
             for (let i = 0; i < varLen; i += 2) {
@@ -39,40 +67,40 @@
             return varName.join("")
         }
 
-        getChoice(list) {
+        choose(list) {
             return list[Math.floor(Math.random() * list.length)]
         }
 
-        getLetter() {
+        letter() {
             let letters = ["a", "b", "c", "d", "e", "w", "z", "x", "y", "n", "m", "k"]
             return letters[Math.floor(Math.random() * letters.length)]
         }
 
-        getVowel() {
+        vowel() {
             let letters = ["a", "e", "i", "o", "u"]
             return letters[Math.floor(Math.random() * letters.length)]
         }
 
-        getConsonant() {
+        consonant() {
             let letters = ["b", "c", "d", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "z"]
             return letters[Math.floor(Math.random() * letters.length)]
         }
 
-        getNumber(from, to) {
+        number(from, to) {
             return Math.trunc((Math.random() * (to - from + 1)) + from)
         }
 
-        getFloat(from, to) {
+        float(from, to) {
             let w = this.getNumber(from, to)
             let e = this.getNumber(10, 99)
             return `${w}.${e}`
         }
 
-        getBool() {
+        bool() {
             return Math.random() > 0.5
         }
 
-        getLogicalSign() {
+        logicalSign() {
             let sign = this.getChoice([">", ">", ">=", "<", "<", "<=", "!=", "=="])
             let word = ""
             switch (sign) {
@@ -98,11 +126,11 @@
             return [sign, word]
         }
 
-        getMathSign() {
-            return this.getChoice(["+", "-", "+", "-", "+", "-"])
+        mathSign() {
+            return this.choose(["+", "-", "+", "*", "-", "+", "-", "*"])
         }
 
-        getFuncFromSign(sign) {
+        funcFromSign(sign) {
             switch (sign) {
                 case "+":
                     return "plus"
@@ -130,26 +158,97 @@
         }
     }
 
+
+
+    class MathString{
+        vara
+        left
+        sign
+        right 
+        result
+        
+        constructor(varName = "new", genPart=genPartType.both){
+            this.sign = randomizer.mathSign()
+            if(varName == "new"){
+                this.vara = varNames.getNext()
+            }else{
+                this.vara = varName
+            }
+            switch(genPart){
+                case genPartType.left:{
+                    this.a = usedVarNames.get()
+                    this.b = randomizer.number(1,4)
+                    }break;
+                case genPartType.both:{
+                    this.a = randomizer.number(2,4)
+                    this.b = randomizer.number(1,4)
+                    }break;
+                case genPartType.right:{
+                    this.a = randomizer.number(2,4)
+                    this.b = usedVarNames.get()
+                    }break;
+            }
+        }
+    }
+
     class Task {
 
         constructor() {
-            this.varNames = ["a", "b", "c", "d", "e", "w", "z", "x", "y", "n", "m", "k"]
-            randomizer.shuffle(this.varNames)
-            this.names = []
-            this.values = []
+            randomizer.shuffle(varNames.names)
+            this.questions = []
         }
 
         reset() {
-
-            this.names = [this.varNames[0]]
-            this.values.push(randomizer.getNumber(2, 5))
+            this.mathStrings = []
+            this.mathStrings.push(MathString("new",))
             this.makeQuestion()
             this.makeAnswer()
         }
 
-        makeQuestion() {
-            this.question = `${this.names[0]} = ${this.values[0]}`
-            console.log(this.question)
+        makeQuestion(count = 5) {
+            this.questions.push(`${this.names[this.varIndex]} = ${this.values[this.varIndex]}`)
+            let number = 0
+            while (number < count) {
+                this.questions.push(this.makeOneMath())
+                number++
+            }
+            console.log(this.questions)
+        }
+
+        makeOneMath() {
+            let res = 0
+            let memA = 0
+            let indexA = -1
+            let sign = 0
+            let memB = 0
+            let indexB = -1
+            let 
+            if (randomizer.number(1, 100) > 50) {
+                res = this.varNames[this.varIndex]
+                this.names.push(res)
+                this.index++
+            } else {
+                res = randomizer.choose(this.names)
+            }
+
+            if (randomizer.number(1, 100) > 50) {
+                isVarInString = true
+                memA = randomizer.choose(this.names)
+            } else {
+                memA = randomizer.number(2, 4)
+            }
+            sign = randomizer.mathSign()
+            if (isVarInString) {
+                if (randomizer.number(1, 100) > 50) {
+                    memB = randomizer.choose(this.names)
+                } else {
+                    memB = randomizer.number(2, 4)
+                }
+            } else {
+                memB = randomizer.choose(this.names)
+            }
+
+            return `${res} = ${memA} ${sign} ${memB}`
         }
 
         makeAnswer() {
@@ -172,10 +271,7 @@
     let checker = new Checker()
     let task = new Task()
 
-    let count = 0
-
     function screenUiUpdate() {
-        console.log("COUNT - ", count)
         questionText.text = task.question
     }
 
@@ -184,17 +280,15 @@
     }
 
     window.addEventListener('load', () => {
-        task.reset()
+        task.reset(taskCount.value)
         screenUiUpdate()
     })
 
     checkBtn.addEventListener('click', () => {
         answerChecker.clearAnswer(answerInputText.value)
         if (answerChecker.isRight(task.answer)) {
-            count++
             answerCont.style.borderColor = "green"
         } else {
-            count = 0
             answerCont.style.borderColor = "red"
         }
         btnUiUpdate()
