@@ -2,62 +2,122 @@
     <meta charset="utf-8">
     <style>
         body {
+            font-size: 20px;
             font-family: Consolas, monospace;
+        }
+
+        .answerInputText {
+            margin: 10px 0;
+            padding: 10px;
+            width: 500px;
+        }
+        .answerInputText{
+            font-size: 20px;
+        }
+        .checkBtn {
+            display: block;
         }
     </style>
 </head>
 
 <body>
-<div>Количество <input value="5" class="taskCountText"></div>
-<div class="questionText"></div>
-<button class="checkBtn">Проверить</button>
-</div>
+    <div class="rightAnswerCount">Правильно:</div>
+    <div>Количество <input value="10" class="taskCountText"></div>
+    <div class="questionText"></div>
+    <div><input class="answerInputText"></div>
+    <button class="checkBtn">Проверить</button>
+    </div>
 </body>
 <script>
 
-    let genPartType = {
-        number: 0,
-        twoVars: 1,
-        single: 2
-    }
+    let rightAnswerCountEl = document.querySelector(".rightAnswerCount")
+    let taskCount = Number(document.querySelector(".taskCountText").value)
+    let questionTextEl = document.querySelector('.questionText')
+    let answerInputTextEl = document.querySelector('.answerInputText')
+    let checkBtn = document.querySelector('.checkBtn')
 
+    class UsedVar {
+        constructor() {
+            this.index = data.getUsed()
+            this.string = data.getString(this.index)
+        }
 
-    let varNames = {
-        index: 0,
-        names: ["a", "b", "c", "f", "e", "w", "z", "x", "y", "n", "g", "k"],
-
-        shuffle() {
-
-        },
-
-        getNext() {
-            this.index++
-            return this.names[this.index - 1]
+        str() {
+            return this.string
         }
     }
 
-    let usedVarNames = {
-        names: [],
-        get(name) {
-            let remainLetters = []
-            for (let i = 0; i < this.names.length; i++) {
-                if (this.names[i]!=name){
-                    remainLetters.push(this.names[i])
-                }
+    class Var {
+        constructor() {
+            this.index = data.getNew()
+            this.string = data.getString(this.index)
+        }
+
+        str() {
+            return this.string
+        }
+    }
+
+    class Integer {
+        constructor(to) {
+            if (to) {
+                this.value = random.numberIn(1, to)
+            } else {
+                this.value = random.numberIn(1, 5)
             }
-            return randomizer.shuffle(remainLetters)
         }
+
+        str() {
+            return this.value
+        }
+    }
+
+    class Data {
+
+        constructor() {
+            this.reset()
+        }
+
+        reset() {
+            this.letters = ["a", "b", "c", "f", "e", "w", "z", "x", "y", "n", "g", "k", "h", "q", "r", "t"]
+            random.shuffle(this.letters)
+            this.names = []
+            this.values = []
+            this.lettersIndex = 0
+            this.namesIndex = 0
+        }
+
+        getNew() {
+            this.names.push(this.letters[this.lettersIndex])
+            this.namesIndex++
+            this.lettersIndex++
+            return this.namesIndex - 1
+        }
+
+        getUsed() {
+            return random.numberOut(0, this.names.length)
+        }
+
+        update(index, value) {
+            this.values[index] = value
+        }
+
+        getString(index) {
+            return this.names[index]
+        }
+
     }
 
     class Randomizer {
+
         shuffle(ar) {
-            let index = this.number(0, ar.length - 1)
+            let index = this.numberOut(0, ar.length)
             let temp = 0
             for (let i = 0; i < ar.length; i++) {
                 temp = ar[index]
                 ar[index] = ar[i]
                 ar[i] = temp
-                index = this.number(0, ar.length - 1)
+                index = this.numberOut(0, ar.length)
             }
         }
 
@@ -65,113 +125,105 @@
             return list[Math.floor(Math.random() * list.length)]
         }
 
-        number(from, to) {
+        numberIn(from, to) {
             return Math.trunc((Math.random() * (to - from + 1)) + from)
         }
 
-        mathSign() {
-            return this.choose(["+", "-", "+", "*", "-", "+", "-", "*"])
+        numberOut(from, to) {
+            return Math.trunc((Math.random() * (to - from)) + from)
         }
 
+        mathSign() {
+            return this.choose(["+", "-", "+", "+", "-", "+", "-", "-"])
+        }
     }
 
     class Checker {
-        clearAnswer(answerString) {
-            this.answer = answerString.split("\n")
-        }
 
-        isRight(rightAnswer) {
-            for (let i = 0; i < this.answer.length; i++) {
-                if (rightAnswer[i] != this.answer[i]) {
-                    return false
-                }
-            }
+        isRight(task) {
+
             return true
         }
     }
 
+    class FirstMathString {
 
-    class MathString {
-        vara
-        par = []
-        sign
-        result
-
-        constructor(varName = "new", genPart = genPartType.single) {
-            this.sign = randomizer.mathSign()
-            this.createVar(varName)
-            this.createMath(genPart)
+        constructor() {
+            this.sign = "+"
+            this.var = new Var()
+            this.a = new Integer()
+            data.update(this.var.index, this.a)
         }
 
-        createVar(isNew) {
-            if (isNew) {
-                this.vara = varNames.getNext()
-                usedVarNames.names.push(this.vara)
-            } else {
-                this.vara = usedVarNames.get()
-            }
-        }
-
-        createMath(genPart) {
-            switch (genPart) {
-                case genPartType.number: {
-                    for (let i = 0; i < 2; i++) {
-                        this.par[i] = randomizer.number(2, 4)
-                    }
-                }
-                    break
-                case genPartType.single: {
-                    for (let i = 0; i < 2; i++) {
-                        if (randomizer.number(1, 100) > 50) {
-                            this.par[i] = usedVarNames.get(this.vara)
-                        } else {
-                            this.par[i] = randomizer.number(2, 4)
-                        }
-
-                    }
-                    if (randomizer.number(1, 100) > 50) {
-                        this.left = usedVarNames.get(this.vara)
-                        this.right = randomizer.number(1, 4)
-                    } else {
-                        this.left = randomizer.number(1, 4)
-                        this.right = usedVarNames.get(this.vara)
-                    }
-                }
-                    break
-                case genPartType.twoVars: {
-
-                }
-                    break
-            }
+        str() {
+            return `${this.var.str()} = ${this.a.str()}`
         }
 
         print() {
-            console.log(`${this.vara} = ${this.left} ${this.sign} ${this.right}`)
+            console.log(this.str)
+        }
+
+    }
+
+    class MathString {
+
+        constructor() {
+            this.sign = random.mathSign()
+            let isVar = false
+            if (random.numberIn(1, 100) >= 50) {
+                this.a = new UsedVar()
+                isVar = true
+            } else {
+                this.a = new Integer()
+            }
+            if (isVar) {
+                if (random.numberIn(1, 100) >= 50) {
+                    this.b = new UsedVar()
+                } else {
+                    this.b = new Integer()
+                }
+            } else {
+                this.b = new UsedVar()
+            }
+            if (random.numberIn(1, 100) >= 50) {
+                this.var = new Var()
+            } else {
+                this.var = new UsedVar()
+
+            }
+            data.update(this.var.index, this.calkResult())
+        }
+
+        calkResult() {
+            if (this.sign == "+") {
+                return this.a + this.b
+            } else if (this.sign == "-") {
+                return this.a - this.b
+            }
+        }
+
+        str() {
+            return `${this.var.str()} = ${this.a.str()} ${this.sign} ${this.b.str()}`
+        }
+
+        print() {
+            console.log(this.str)
         }
     }
 
     class Task {
 
-        constructor(count) {
-            this.count = Number(count)
-        }
-
         reset() {
-            randomizer.shuffle(varNames.names)
-            usedVarNames.names = []
+            data.reset()
             this.question = []
+            this.question.push(new FirstMathString())
             this.makeQuestion()
             this.makeAnswer()
         }
 
         makeQuestion() {
-            this.question.push(new MathString("new", genPartType.both))
-            this.question.push(new MathString())
-            for (let i = 2; i < this.count; i++) {
+            for (let i = 1; i < taskCount; i++) {
                 this.question.push(new MathString())
-            }
-            for (let i = 0; i < this.count; i++) {
-                this.question[i].print()
             }
         }
 
@@ -184,38 +236,33 @@
         }
     }
 
-    let taskCount = document.querySelector(".taskCountText")
-    let questionText = document.querySelector('.questionText')
-    let answerCont = document.querySelector('.answerCont')
-    let answerCountText = document.querySelector('.answerCountText')
-    let answerInputText = document.querySelector('.answerInputText')
-    let checkBtn = document.querySelector('.checkBtn')
-
-    let randomizer = new Randomizer()
+    let random = new Randomizer()
     let checker = new Checker()
-    let task = new Task(taskCount.value)
+    let task = new Task()
+    let data = new Data()
+    let rightAnswerCount = 0
 
     function screenUiUpdate() {
-        questionText.text = task.question
-    }
-
-    function btnUiUpdate() {
-
+        answerInputTextEl.value = ""
+        rightAnswerCountEl.textContent = `Правильно: ${rightAnswerCount}`
+        questionTextEl.replaceChildren()
+        for (let i = 0; i < taskCount; i++) {
+            questionTextEl.insertAdjacentHTML("beforeend", `<div>${task.question[i].str()}</div>`)
+        }
     }
 
     window.addEventListener('load', () => {
-        task.reset(taskCount.value)
+        task.reset()
         screenUiUpdate()
     })
 
     checkBtn.addEventListener('click', () => {
-        answerChecker.clearAnswer(answerInputText.value)
-        if (answerChecker.isRight(task.answer)) {
-            answerCont.style.borderColor = "green"
-        } else {
-            answerCont.style.borderColor = "red"
+        if(checker.isRight(task)){
+            rightAnswerCount++
+        }else{
+            rightAnswerCount=0
         }
-        btnUiUpdate()
+        taskCount = Number(document.querySelector(".taskCountText").value)
         task.reset()
         screenUiUpdate()
     })
