@@ -11,9 +11,11 @@
             padding: 10px;
             width: 500px;
         }
-        .answerInputText{
+
+        .answerInputText {
             font-size: 20px;
         }
+
         .checkBtn {
             display: block;
         }
@@ -26,11 +28,13 @@
     <div class="questionText"></div>
     <div><input class="answerInputText"></div>
     <button class="checkBtn">Проверить</button>
+    <div class="rightAnswerText"></div>
     </div>
 </body>
 <script>
 
     let rightAnswerCountEl = document.querySelector(".rightAnswerCount")
+    let rightAnswerTextEl = document.querySelector(".rightAnswerText")
     let taskCount = Number(document.querySelector(".taskCountText").value)
     let questionTextEl = document.querySelector('.questionText')
     let answerInputTextEl = document.querySelector('.answerInputText')
@@ -38,8 +42,11 @@
 
     class UsedVar {
         constructor() {
-            this.index = data.getUsed()
-            this.string = data.getString(this.index)
+            [this.index, this.string, this.value] = data.getUsed()
+        }
+
+        setValue(v) {
+            data[this.index] = v
         }
 
         str() {
@@ -49,8 +56,13 @@
 
     class Var {
         constructor() {
+            this.value = 0
             this.index = data.getNew()
-            this.string = data.getString(this.index)
+            this.string = data.names[this.index]
+        }
+
+        setValue(v) {
+            data.values[this.index] = v
         }
 
         str() {
@@ -95,17 +107,9 @@
         }
 
         getUsed() {
-            return random.numberOut(0, this.names.length)
+            let index = random.numberOut(0, this.names.length)
+            return [index, this.names[index], this.values[index]]
         }
-
-        update(index, value) {
-            this.values[index] = value
-        }
-
-        getString(index) {
-            return this.names[index]
-        }
-
     }
 
     class Randomizer {
@@ -152,7 +156,7 @@
             this.sign = "+"
             this.var = new Var()
             this.a = new Integer()
-            data.update(this.var.index, this.a)
+            this.var.setValue(this.a.value)
         }
 
         str() {
@@ -191,14 +195,14 @@
                 this.var = new UsedVar()
 
             }
-            data.update(this.var.index, this.calkResult())
+            this.var.setValue(this.calkResult())
         }
 
         calkResult() {
             if (this.sign == "+") {
-                return this.a + this.b
+                return this.a.value + this.b.value
             } else if (this.sign == "-") {
-                return this.a - this.b
+                return this.a.value - this.b.value
             }
         }
 
@@ -224,15 +228,27 @@
         makeQuestion() {
             for (let i = 1; i < taskCount; i++) {
                 this.question.push(new MathString())
+                console.log(data.names)
+                console.log(data.values);
+
             }
         }
 
         makeAnswer() {
             this.answer = []
+            let i = 0
+            while (true) {
+                if (data.names[i]) {
+                    this.answer.push(`${data.names[i]}=${data.values[i]}`)
+                    i++
+                } else {
+                    break
+                }
+            }
         }
 
         printAnswer() {
-            return this.answer.join("\n")
+            return this.answer.join(" ")
         }
     }
 
@@ -257,10 +273,11 @@
     })
 
     checkBtn.addEventListener('click', () => {
-        if(checker.isRight(task)){
+        task.makeAnswer()
+        if (checker.isRight(task)) {
             rightAnswerCount++
-        }else{
-            rightAnswerCount=0
+        } else {
+            rightAnswerCount = 0
         }
         taskCount = Number(document.querySelector(".taskCountText").value)
         task.reset()
