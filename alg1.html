@@ -12,6 +12,11 @@
             width: 500px;
         }
 
+        .rightAnswerText {
+            display: flex;
+            gap: 20px;
+        }
+
         .answerInputText {
             font-size: 20px;
         }
@@ -28,13 +33,18 @@
     <div class="questionText"></div>
     <div><input class="answerInputText"></div>
     <button class="checkBtn">Проверить</button>
-    <div class="rightAnswerText"></div>
+    <div class="rightAnswerText">
+        <div class="playerAnswer"></div>
+        <div class="computerAnswer"></div>
+    </div>
     </div>
 </body>
 <script>
-
     let rightAnswerCountEl = document.querySelector(".rightAnswerCount")
     let rightAnswerTextEl = document.querySelector(".rightAnswerText")
+    let playerAnswerEl = document.querySelector(".playerAnswer")
+    let computerAnswerEl = document.querySelector(".computerAnswer")
+
     let taskCount = Number(document.querySelector(".taskCountText").value)
     let questionTextEl = document.querySelector('.questionText')
     let answerInputTextEl = document.querySelector('.answerInputText')
@@ -45,8 +55,8 @@
             [this.index, this.string, this.value] = data.getUsed()
         }
 
-        setValue(v) {
-            data[this.index] = v
+        setValue(value) {
+            data.values[this.index] = value
         }
 
         str() {
@@ -54,15 +64,13 @@
         }
     }
 
-    class Var {
+    class NewVar {
         constructor() {
-            this.value = 0
-            this.index = data.getNew()
-            this.string = data.names[this.index]
+            [this.index,this.string] = data.getNew()
         }
 
-        setValue(v) {
-            data.values[this.index] = v
+        setValue(value) {
+            data.values[this.index] = value
         }
 
         str() {
@@ -103,7 +111,7 @@
             this.names.push(this.letters[this.lettersIndex])
             this.namesIndex++
             this.lettersIndex++
-            return this.namesIndex - 1
+            return [this.namesIndex - 1,this.names[this.namesIndex-1]]
         }
 
         getUsed() {
@@ -144,8 +152,16 @@
 
     class Checker {
 
-        isRight(task) {
 
+        readInput(obj) {
+            this.input = obj.value.split(" ")
+        }
+
+        isRight(task) {
+            if (this.input.length != task.answer.length) return false
+            for (let i = 0; i < this.input.length; i++) {
+                if (this.input[i] != task.answer[i]) return false
+            }
             return true
         }
     }
@@ -154,7 +170,7 @@
 
         constructor() {
             this.sign = "+"
-            this.var = new Var()
+            this.var = new NewVar()
             this.a = new Integer()
             this.var.setValue(this.a.value)
         }
@@ -190,12 +206,15 @@
                 this.b = new UsedVar()
             }
             if (random.numberIn(1, 100) >= 50) {
-                this.var = new Var()
+                this.var = new NewVar()
             } else {
                 this.var = new UsedVar()
 
             }
+            let temp = this.calkResult()
             this.var.setValue(this.calkResult())
+            console.log(data.names);
+            console.log(data.values);
         }
 
         calkResult() {
@@ -228,22 +247,16 @@
         makeQuestion() {
             for (let i = 1; i < taskCount; i++) {
                 this.question.push(new MathString())
-                console.log(data.names)
+                console.log(data.names);
                 console.log(data.values);
-
             }
         }
 
         makeAnswer() {
             this.answer = []
             let i = 0
-            while (true) {
-                if (data.names[i]) {
-                    this.answer.push(`${data.names[i]}=${data.values[i]}`)
-                    i++
-                } else {
-                    break
-                }
+            for(let i=0;i<data.names.length;i++){
+                this.answer.push(`${data.names[i]}=${data.values[i]}`)
             }
         }
 
@@ -258,7 +271,7 @@
     let data = new Data()
     let rightAnswerCount = 0
 
-    function screenUiUpdate() {
+    function printTasks() {
         answerInputTextEl.value = ""
         rightAnswerCountEl.textContent = `Правильно: ${rightAnswerCount}`
         questionTextEl.replaceChildren()
@@ -267,20 +280,36 @@
         }
     }
 
+    function printRightAnswers() {
+        playerAnswerEl.replaceChildren()
+        for (let i = 0; i < checker.input.length; i++) {
+            playerAnswerEl.insertAdjacentHTML("beforeend", `<div>${checker.input[i]}</div>`)
+        }
+        computerAnswerEl.replaceChildren()
+        for (let i = 0; i < task.answer.length; i++) {
+            computerAnswerEl.insertAdjacentHTML("beforeend", `<div>${task.answer[i]}</div>`)
+        }
+    }
+
     window.addEventListener('load', () => {
         task.reset()
-        screenUiUpdate()
+        printTasks()
     })
 
     checkBtn.addEventListener('click', () => {
         task.makeAnswer()
+        console.log(data.names);
+        console.log(data.values);
+        console.log(task.answer);
+        checker.readInput(answerInputTextEl)
         if (checker.isRight(task)) {
             rightAnswerCount++
         } else {
             rightAnswerCount = 0
         }
         taskCount = Number(document.querySelector(".taskCountText").value)
+        printRightAnswers()
         task.reset()
-        screenUiUpdate()
+        printTasks()
     })
 </script>
