@@ -213,8 +213,6 @@
             }
             let temp = this.calkResult()
             this.var.setValue(this.calkResult())
-            console.log(data.names);
-            console.log(data.values);
         }
 
         calkResult() {
@@ -247,8 +245,6 @@
         makeQuestion() {
             for (let i = 1; i < taskCount; i++) {
                 this.question.push(new MathString())
-                console.log(data.names);
-                console.log(data.values);
             }
         }
 
@@ -298,9 +294,6 @@
 
     checkBtn.addEventListener('click', () => {
         task.makeAnswer()
-        console.log(data.names);
-        console.log(data.values);
-        console.log(task.answer);
         checker.readInput(answerInputTextEl)
         if (checker.isRight(task)) {
             rightAnswerCount++
